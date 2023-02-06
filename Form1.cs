@@ -92,7 +92,7 @@ namespace Cryptography
 
         private void InitMatrix(char[,] matrix)
         {
-            String word = textBox3.Text;
+            String text = textBox3.Text;
             for (int i = 0; i < 6; i++)
                 for (int j = 0; j < 6; j++)
                     matrix[i, j] = '-';
@@ -100,9 +100,9 @@ namespace Cryptography
             for (int i = 0; i < 6; i++)
                 for (int j = 0; j < 6; j++)
                 {
-                    matrix[i, j] = word[l];
+                    matrix[i, j] = text[l];
                     l = l + 1;
-                    if (l == word.Length - 1)
+                    if (l == text.Length - 1)
                     {
                         goto next;
                     }
@@ -130,27 +130,169 @@ namespace Cryptography
 
         }
 
+        private void IndexesOf(char elem, char[,] matrix, ref int index_i, ref int index_j)
+        {
+            for (int k = 0; k < 6; k++)
+                for (int f = 0; f < 6; f++)
+                {
+                    if (matrix[k, f] == elem)
+                    {
+                        index_i = k;
+                        index_j = f;
+                        return;
+                    }
+                }
+        }
+
         private String PlayfairCipher(String text)
         {
             String coded = "";
             char[,] matrix = new char[6, 6];
             InitMatrix(matrix); // Инициализирует матрицу
+
+
+            int index_i_1 = 0, index_j_1 = 0, index_i_2 = 0, index_j_2 = 0;
+            int i = 0;
+            while (i < text.Length)
+            {
+                IndexesOf(text[i], matrix, ref index_i_1, ref index_j_1);
+                if (i + 1 == text.Length || text[i] == text[i + 1])
+                {
+                    IndexesOf(text[i], matrix, ref index_i_2, ref index_j_2);
+                }
+                else
+                {
+                    IndexesOf(text[i + 1], matrix, ref index_i_2, ref index_j_2);
+                }
+
+                if (index_i_1 == index_i_2)
+                {
+                    if (index_j_1 == 5)
+                    {
+                        index_j_1 = 0;
+                        index_j_2 += 1;
+                    }
+                    else if (index_j_2 == 5)
+                    {
+                        index_j_1 += 1;
+                        index_j_2 = 0;
+                    }
+                    else
+                    {
+                        index_j_1 += 1;
+                        index_j_2 += 1;
+                    }
+                }
+                else if (index_j_1 == index_j_2)
+                {
+                    if (index_i_1 == 5)
+                    {
+                        index_i_1 = 0;
+                        index_i_2 += 1;
+                    }
+                    else if (index_i_2 == 5)
+                    {
+                        index_i_1 += 1;
+                        index_i_2 = 0;
+                    }
+                    else
+                    {
+                        index_i_1 += 1;
+                        index_i_2 += 1;
+                    }
+                }
+                else
+                {
+                    int b = index_i_1;
+                    index_i_1 = index_i_2;
+                    index_i_2 = b;
+                }
+                coded = coded + matrix[index_i_1, index_j_1] + matrix[index_i_2, index_j_2];
+                i += 2;
+            }
+            return coded;
+
+        }
+
+        string PlayfairDecipher(string text)
+        {
+            String coded = "";
+            char[,] matrix = new char[6, 6];
+            InitMatrix(matrix); // Инициализирует матрицу
+
+            int index_i_1 = 0, index_j_1 = 0, index_i_2 = 0, index_j_2 = 0;
+            int i = 0;
+            while (i < text.Length)
+            {
+                IndexesOf(text[i], matrix, ref index_i_1, ref index_j_1);
+                IndexesOf(text[i + 1], matrix, ref index_i_2, ref index_j_2);
+
+                if (index_i_1 == index_i_2)
+                {
+                    if (index_j_1 == 0)
+                    {
+                        index_j_1 = 5;
+                        index_j_2 -= 1;
+                    }
+                    else if (index_j_2 == 0)
+                    {
+                        index_j_1 -= 1;
+                        index_j_2 = 5;
+                    }
+                    else
+                    {
+                        index_j_1 -= 1;
+                        index_j_2 -= 1;
+                    }
+                }
+                else if (index_j_1 == index_j_2)
+                {
+                    if (index_i_1 == 0)
+                    {
+                        index_i_1 = 5;
+                        index_i_2 -= 1;
+                    }
+                    else if (index_i_2 == 0)
+                    {
+                        index_i_1 -= 1;
+                        index_i_2 = 5;
+                    }
+                    else
+                    {
+                        index_i_1 -= 1;
+                        index_i_2 -= 1;
+                    }
+                }
+                else
+                {
+                    int b = index_i_1;
+                    index_i_1 = index_i_2;
+                    index_i_2 = b;
+                }
+                if (matrix[index_i_1, index_j_1] != ',')
+                    coded = coded + matrix[index_i_1, index_j_1];
+                if (matrix[index_i_2, index_j_2] != '.')
+                    coded = coded + matrix[index_i_2, index_j_2];
+
+                i += 2;
+            }
             return coded;
         }
+
 
         private Dictionary<char, float> SymbolNChance(String text)
         {
             var characterCount = new Dictionary<char, float>();
-            foreach (var c in text)
+            foreach (var coded in text)
             {
-                if (characterCount.ContainsKey(c))
-                    characterCount[c]++;
+                if (characterCount.ContainsKey(coded))
+                    characterCount[coded]++;
                 else
-                    characterCount[c] = 1;
+                    characterCount[coded] = 1;
             }
-            foreach (var c in characterCount.Keys)
+            foreach (var coded in characterCount.Keys)
             {
-                characterCount[c] = characterCount[c] / 36;
+                characterCount[coded] = characterCount[coded] / 36;
             }
             return characterCount;
         }
@@ -185,7 +327,9 @@ namespace Cryptography
             {
                 label5.Hide();
                 dataGridView1.Hide();
-                PlayfairCipher(text);
+                String coded = PlayfairCipher(text);
+                richTextBox2.Text = coded;
+                return;
             }
 
         }
@@ -206,15 +350,30 @@ namespace Cryptography
             if (radioButton2.Checked)
             {
                 int K = Convert.ToInt32(textBox1.Text);
-                MultiplicativeCipher(text, K);
+                var dict = SymbolNChance(text);
+                dataGridView1.DataSource = dict.ToArray();
+                dataGridView1.Refresh();
+                String coded = MultiplicativeCipher(text, K);
+                richTextBox2.Text = coded;
                 return;
+                
             }
             if (radioButton3.Checked)
             {
                 label5.Hide();
                 dataGridView1.Hide();
-                PlayfairCipher(text);
+                String coded = PlayfairDecipher(text);
+                String newcoded = coded.Remove(coded.Length - 1, 1);
+                richTextBox2.Text = newcoded;
+                return;
             }
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            String text = richTextBox1.Text;
+            String newtext = text.Replace(" ", "_").ToLower();
+            richTextBox1.Text = newtext;
         }
     }
 }
