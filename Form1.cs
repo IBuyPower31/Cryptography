@@ -51,6 +51,11 @@ namespace Cryptography
         {
             FindPair(K);
             string coded = "";
+            if (textBox2.Text == "")
+            {
+                MessageBox.Show("Выберите другое число, пары к этому не найдено!", "Ошибка!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return coded;
+            }
             int index = 0;
             for (int i = 0; i < text.Length; i++)
             {
@@ -59,11 +64,78 @@ namespace Cryptography
             }
             return coded;
         }
+        public void Print(char[,] matrix)
+        {
+            string Message = "";
+            for (int i = 0; i < 6; i++)
+            {
+                for (int j = 0; j < 6; j++)
+                {
+                    Message = Message + matrix[i, j] + "  ";
+                }
+                Message += "\n";
+            }
+            MessageBox.Show(Message);
+        }
 
+        private bool IsExist(char[,] matrix, char elem)
+        {
+            for (int a = 0; a < 6; a++)
+                for (int b = 0; b < 6; b++)
+                {
+                    if (matrix[a, b] == elem)
+                        return true;
+                }
+            return false;
+
+        }
+
+        private void InitMatrix(char[,] matrix)
+        {
+            String word = textBox3.Text;
+            for (int i = 0; i < 6; i++)
+                for (int j = 0; j < 6; j++)
+                    matrix[i, j] = '-';
+            int l = 0;
+            for (int i = 0; i < 6; i++)
+                for (int j = 0; j < 6; j++)
+                {
+                    matrix[i, j] = word[l];
+                    l = l + 1;
+                    if (l == word.Length - 1)
+                    {
+                        goto next;
+                    }
+                }
+
+            next:  int index = 0;
+            for (int i = 0; i < 6; i++)
+                for (int j = 0; j < 6; j++)
+                {
+                    check:  if (matrix[i, j] == '-')
+                    {
+                        if (IsExist(matrix, Alphabet[index]))
+                        {
+                            index += 1;
+                            goto check;
+                        }
+                        else
+                        {
+                            matrix[i, j] = Alphabet[index];
+                        }
+                        index += 1;
+                    }
+                }
+            Print(matrix);
+
+        }
 
         private String PlayfairCipher(String text)
         {
-            return text;
+            String coded = "";
+            char[,] matrix = new char[6, 6];
+            InitMatrix(matrix); // Инициализирует матрицу
+            return coded;
         }
 
         private Dictionary<char, float> SymbolNChance(String text)
@@ -85,10 +157,13 @@ namespace Cryptography
 
         private void button1_Click(object sender, EventArgs e)
         {
+            
             String text = richTextBox1.Text;
-            int K = Convert.ToInt32(textBox1.Text);
+            label5.Show();
+            dataGridView1.Show();
             if (radioButton1.Checked)
             {
+                int K = Convert.ToInt32(textBox1.Text);
                 var dict = SymbolNChance(text);
                 dataGridView1.DataSource = dict.ToArray();
                 dataGridView1.Refresh();
@@ -98,6 +173,7 @@ namespace Cryptography
             }
             if (radioButton2.Checked)
             {
+                int K = Convert.ToInt32(textBox1.Text);
                 var dict = SymbolNChance(text);
                 dataGridView1.DataSource = dict.ToArray();
                 dataGridView1.Refresh();
@@ -107,6 +183,8 @@ namespace Cryptography
             }
             if (radioButton3.Checked)
             {
+                label5.Hide();
+                dataGridView1.Hide();
                 PlayfairCipher(text);
             }
 
@@ -115,9 +193,11 @@ namespace Cryptography
         private void button2_Click(object sender, EventArgs e)
         {
             String text = richTextBox1.Text;
-            int K = Convert.ToInt32(textBox1.Text);
+            label5.Show();
+            dataGridView1.Show();
             if (radioButton1.Checked)
             {
+                int K = Convert.ToInt32(textBox1.Text);
                 K = 36 - Math.Abs(K);
                 String coded = CaesarEncrypt(text, K);
                 richTextBox2.Text = coded;
@@ -125,11 +205,14 @@ namespace Cryptography
             }
             if (radioButton2.Checked)
             {
+                int K = Convert.ToInt32(textBox1.Text);
                 MultiplicativeCipher(text, K);
                 return;
             }
             if (radioButton3.Checked)
             {
+                label5.Hide();
+                dataGridView1.Hide();
                 PlayfairCipher(text);
             }
         }
